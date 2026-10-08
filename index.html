@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>After the Fall: A Zombie Government Adventure</title>
+<style>
+:root { color-scheme: light dark; --bg:#111714; --panel:#1b2420; --panel2:#222e28; --text:#eef3ee; --muted:#b9c5bc; --accent:#d6a84f; --danger:#b94b43; --good:#7fb77e; --border:#39463e; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:var(--text); }
+#app { min-height:100vh; background:var(--bg); }
+header { padding:24px 20px 14px; border-bottom:1px solid var(--border); background:#151c18; }
+.wrap { max-width:980px; margin:auto; }
+.kicker { color:var(--accent); text-transform:uppercase; letter-spacing:.12em; font-size:.78rem; font-weight:800; }
+h1 { margin:5px 0 6px; font-size:clamp(1.8rem,4vw,3rem); line-height:1.05; }
+.subtitle { margin:0; color:var(--muted); max-width:760px; }
+.progress { height:8px; background:#2b352f; border-radius:99px; overflow:hidden; margin-top:18px; }
+#bar { height:100%; width:0; background:var(--accent); transition:width .3s; }
+main { padding:26px 20px 50px; }
+.card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:24px; box-shadow:0 8px 28px #0004; }
+.scene-label { color:var(--accent); font-weight:800; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
+h2 { margin:7px 0 14px; font-size:clamp(1.4rem,3vw,2rem); }
+p { line-height:1.65; }
+.story { font-size:1.05rem; color:#e2e9e3; }
+.choice-grid { display:grid; gap:12px; margin-top:22px; }
+button.choice { text-align:left; width:100%; border:1px solid var(--border); background:var(--panel2); color:var(--text); border-radius:12px; padding:16px; cursor:pointer; transition:.15s; }
+button.choice:hover, button.choice:focus { transform:translateY(-1px); border-color:var(--accent); outline:none; background:#29362e; }
+.choice strong { display:block; margin-bottom:5px; }
+.choice span { color:var(--muted); font-size:.92rem; line-height:1.4; }
+.status { display:flex; gap:10px; flex-wrap:wrap; margin:16px 0 0; }
+.pill { border:1px solid var(--border); border-radius:99px; padding:6px 10px; color:var(--muted); font-size:.82rem; }
+#feedback { margin-top:16px; padding:14px; border-left:4px solid var(--accent); background:#202a24; display:none; }
+.result { display:grid; grid-template-columns:1fr; gap:18px; }
+.gov { border:2px solid var(--accent); border-radius:14px; padding:20px; background:#252e27; }
+.gov h3 { margin:0 0 5px; font-size:1.7rem; }
+.scoregrid { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin-top:14px; }
+.score { background:#17201b; padding:10px; border-radius:9px; font-size:.86rem; color:var(--muted); }
+.score b { display:block; color:var(--text); font-size:1rem; }
+.actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+.action { border:0; border-radius:10px; padding:11px 16px; cursor:pointer; font-weight:800; background:var(--accent); color:#17130a; }
+.action.secondary { background:transparent; border:1px solid var(--border); color:var(--text); }
+.teacher { margin-top:20px; background:#151d19; border:1px solid var(--border); border-radius:12px; padding:16px; }
+.teacher summary { cursor:pointer; font-weight:800; color:var(--accent); }
+.small { color:var(--muted); font-size:.88rem; }
+@media (min-width:700px) { .choice-grid { grid-template-columns:1fr 1fr; } .result { grid-template-columns:1.25fr .75fr; } }
+</style>
+</head>
+<body>
+<div id="app">
+<header><div class="wrap">
+<div class="kicker">Junior High Social Studies • Choose Your Own Adventure</div>
+<h1>After the Fall</h1>
+<p class="subtitle">A zombie-survival story about rebuilding society. Every decision changes who holds power, how rules are made, and what your community becomes.</p>
+<div class="progress"><div id="bar"></div></div>
+</div></header>
+<main><div class="wrap"><div id="game"></div></div></main>
+</div>
+<script>
+const scenes = [
+{ id:'start', title:'Day 1: The Bell Tower', text:`The power grid has failed. The roads are blocked. Your town has survived the first wave of the undead, but food is limited and nobody knows what comes next. Forty-three survivors gather at the old school. Everyone looks to you and three other student leaders for a plan.`, choices:[
+['Let everyone vote on the first emergency rules.','People should have a direct voice, even during a crisis.',['popular','participation']],
+['Choose a small council of trusted survivors to act quickly.','A smaller group can make decisions faster.',['elite','efficiency']],
+['Put the strongest, most experienced leader in charge.','A crisis needs one clear chain of command.',['power','order']],
+['Write a temporary rulebook protecting basic rights.','Even in an emergency, leaders need limits.',['rights','law']]]},
+{ id:'food', title:'Day 3: The Food Room', text:`A locked storage room contains enough canned food for everyone for two weeks—if it is rationed carefully. The group argues about who should decide who gets what.`, choices:[
+['Hold a community vote on the ration plan.','Everyone affected should help decide the rules.',['popular','participation']],
+['Have elected representatives create the plan.','People can choose representatives who study the problem and decide.',['representation','law']],
+['Let the council decide after hearing from experts.','A few informed people can make a practical plan.',['elite','efficiency']],
+['Give the commander authority to distribute food.','One person needs to make the hard calls quickly.',['power','order']]]},
+{ id:'patrol', title:'Day 6: The Night Patrol', text:`A group of survivors wants to patrol the fence at night. They ask whether they should be allowed to carry weapons and whether the patrol leader can search homes for suspicious activity.`, choices:[
+['Require a community-approved rule and limits on searches.','Security matters, but individual rights matter too.',['rights','law']],
+['Let the patrol leader decide during emergencies.','The patrol needs flexibility when danger appears.',['power','order']],
+['Have the elected council create a written security policy.','Representatives should balance safety and rights.',['representation','law']],
+['Let the patrol captains make the policy together.','People with direct experience should have the strongest voice.',['elite','efficiency']]]},
+{ id:'outsiders', title:'Day 10: Strangers at the Gate', text:`Ten travelers arrive. They have useful skills but little food. Some residents want them admitted immediately. Others fear they may bring danger.`, choices:[
+['Ask the entire settlement to vote on admission.','A major community decision should belong to the people.',['popular','participation']],
+['Have the council interview them and decide.','A representative group can investigate without a chaotic crowd.',['representation','efficiency']],
+['Let the settlement leader decide who enters.','Someone must take responsibility for a difficult security choice.',['power','order']],
+['Create a standing council of the settlement’s most influential families.','Those with resources and experience should guide the community.',['elite','power']]]},
+{ id:'leader', title:'Day 14: The Leader’s Successor', text:`Your most popular leader has kept the settlement safe. Now they announce they want their child to become the next leader if anything happens to them. Some residents cheer. Others object.`, choices:[
+['Reject inherited leadership and hold an election.','Leadership should depend on the people’s choice, not family.',['popular','representation']],
+['Allow it only if a written constitution permits it.','Even powerful leaders must follow established rules.',['rights','law']],
+['Accept the family succession because stability matters most.','A known family can provide continuity during dangerous times.',['power','order','hereditary']],
+['Let a council of powerful families select the next leader.','Leadership should stay with those who have influence and resources.',['elite','power']]]},
+{ id:'constitution', title:'Day 18: The New Charter', text:`The settlement has grown to 70 people. You realize emergency decisions cannot last forever. You gather everyone to create a permanent system.`, choices:[
+['Write a constitution that limits government power and protects rights.','Rules should bind leaders as well as citizens.',['rights','law']],
+['Create a representative assembly elected by citizens.','Citizens choose people to make laws for them.',['representation','law']],
+['Keep major decisions in town meetings where citizens vote directly.','Citizens should vote on important laws themselves.',['popular','participation']],
+['Keep the emergency commander in control until the threat is gone.','Centralized authority still seems safest.',['power','order']]]},
+{ id:'taxes', title:'Day 22: The Wall Project', text:`The settlement needs a stronger wall. Building it requires collecting supplies from every household. A few residents refuse. How should the government respond?`, choices:[
+['Let citizens debate and vote on the contribution rule.','People are more likely to accept a rule they helped make.',['popular','participation']],
+['Have elected representatives pass a fair contribution law.','Representatives can work out the details and be held accountable.',['representation','law']],
+['Let the ruling leader order everyone to contribute.','The project is too urgent for prolonged debate.',['power','order']],
+['Allow the wealthiest families to fund and oversee the wall.','Those with the most resources should have the greatest role.',['elite','power']]]},
+{ id:'rights', title:'Day 27: The Missing Supplies', text:`A family is accused of stealing medicine. The leader wants to punish them immediately. You discover there is no clear evidence.`, choices:[
+['Require a fair hearing before punishment.','Accused people deserve a process and basic protections.',['rights','law']],
+['Let citizens vote on whether the family is guilty.','The community should decide together.',['popular','participation']],
+['Let the council investigate and decide.','A smaller body can review evidence carefully.',['representation','law']],
+['Let the leader punish them immediately to discourage future theft.','Fear of consequences may prevent more theft.',['power','order']]]},
+{ id:'final', title:'Day 35: The First Constitution Day', text:`The zombies are still outside the walls, but your settlement has survived. Now the people ask the biggest question yet: Who should have the final say when citizens disagree? Your answer will define the government you build.`, choices:[
+['The citizens themselves should decide major laws directly.','The people exercise political power themselves.',['popular','participation']],
+['Elected representatives should make laws for the people.','Citizens choose leaders to govern on their behalf.',['representation','law']],
+['Government power must be divided and limited by a constitution.','Leaders have authority, but rights and laws restrain them.',['rights','law']],
+['A monarch should rule, with authority passing through a royal family.','One hereditary ruler provides continuity and centralized leadership.',['hereditary','power','order']],
+['A small group of powerful citizens should govern.','A limited group holds most political decision-making power.',['elite','power']],
+['One ruler should have nearly all political power.','A centralized leader makes the major decisions.',['power','order']]]}
+];
+const govs={
+'democracy':{name:'Democracy',desc:'Political power is broadly held by the people. Citizens have meaningful opportunities to influence government decisions.',tell:'Your choices consistently emphasized citizen participation and shared political power.'},
+'direct':{name:'Direct Democracy',desc:'Citizens themselves vote directly on important laws and decisions rather than leaving most lawmaking to representatives.',tell:'You repeatedly placed major decisions directly in the hands of citizens.'},
+'republic':{name:'Republic',desc:'Citizens elect representatives who make laws and govern on their behalf.',tell:'Your choices favored elected representatives and structured decision-making.'},
+'constitutional':{name:'Constitutional Government',desc:'Government power is limited by a constitution, with protected rights and rules that leaders must follow.',tell:'You emphasized written limits, rights, due process, and rule of law.'},
+'monarchy':{name:'Monarchy',desc:'A monarch serves as the head of government, with leadership typically inherited through a royal family.',tell:'Your choices supported hereditary leadership and continuity through a ruling family.'},
+'oligarchy':{name:'Oligarchy',desc:'A small group of powerful or wealthy people holds most political power.',tell:'You repeatedly gave decision-making power to a small, influential group.'},
+'authoritarian':{name:'Authoritarian Government',desc:'Political power is concentrated in one leader or a small authority, with limited public control over government decisions.',tell:'Your choices favored centralized authority, order, and a strong leader.'}
+};
+let state={i:0, scores:{popular:0,participation:0,representation:0,rights:0,law:0,elite:0,efficiency:0,power:0,order:0,hereditary:0}, history:[]};
+function add(tags){ tags.forEach(t=>state.scores[t]=(state.scores[t]||0)+1); }
+function render(){
+ const s=scenes[state.i];
+ document.getElementById('bar').style.width=((state.i)/scenes.length*100)+'%';
+ const choices=s.choices.map((c,n)=>`<button class="choice" onclick="choose(${n})"><strong>${String.fromCharCode(65+n)}. ${c[0]}</strong><span>${c[1]}</span></button>`).join('');
+ document.getElementById('game').innerHTML=`<section class="card"><div class="scene-label">Scene ${state.i+1} of ${scenes.length}</div><h2>${s.title}</h2><p class="story">${s.text}</p><div class="choice-grid">${choices}</div><div id="feedback"></div><div class="status"><span class="pill">Decisions made: ${state.history.length}</span><span class="pill">The story changes with every choice</span></div></section>`;
+}
+function choose(n){
+ const s=scenes[state.i], c=s.choices[n]; add(c[2]); state.history.push({scene:s.title,choice:c[0]});
+ if(state.i<scenes.length-1){
+  state.i++; render();
+ } else finish();
+}
+function finish(){
+ document.getElementById('bar').style.width='100%';
+ const x=state.scores;
+ const candidates=[
+  ['direct',x.participation*2+x.popular],
+  ['republic',x.representation*2+x.law],
+  ['constitutional',x.rights*2+x.law],
+  ['monarchy',x.hereditary*4+x.power],
+  ['oligarchy',x.elite*3+x.power],
+  ['authoritarian',x.power*2+x.order+x.efficiency],
+  ['democracy',x.popular+x.participation+x.representation]
+ ];
+ candidates.sort((a,b)=>b[1]-a[1]); const gov=govs[candidates[0][0]];
+ const scoreHtml=Object.entries({CitizenVoice:x.popular,DirectVoting:x.participation,Representation:x.representation,Rights:x.rights,RuleOfLaw:x.law,ElitePower:x.elite,CentralPower:x.power,Order:x.order,HereditaryPower:x.hereditary}).map(([k,v])=>`<div class="score"><b>${v}</b>${k}</div>`).join('');
+ document.getElementById('game').innerHTML=`<div class="result"><section class="card"><div class="scene-label">The settlement has chosen</div><div class="gov"><h3>${gov.name}</h3><p>${gov.desc}</p><p><strong>Why you got this result:</strong> ${gov.tell}</p></div><h2>What your choices revealed</h2><p>You weren't simply choosing what to do about zombies. You were deciding <strong>who gets political power, how leaders are chosen, how laws are made, and what limits exist on government.</strong></p><div class="teacher"><details><summary>Teacher / Class Discussion</summary><p>Ask students: Which decision had the biggest impact on your government? Which government type would be strongest during a crisis? Which would best protect individual rights? Could a government change from one type to another over time?</p><p class="small">Academic note: Real governments can combine characteristics. This game assigns the government type that best matches the player's dominant choices.</p></details></div><div class="actions"><button class="action" onclick="location.reload()">Play Again</button><button class="action secondary" onclick="window.print()">Print Results</button></div></section><aside class="card"><div class="scene-label">Your decision profile</div><div class="scoregrid">${scoreHtml}</div></aside></div>`;
+}
+render();
+</script>
+</body>
+</html>
